@@ -2,6 +2,7 @@ package accounting
 
 import (
 	"log"
+	"sort"
 	"time"
 )
 
@@ -71,6 +72,9 @@ func NewCashFlow(eigyoCF, gdb int64) *CashFlow {
 }
 
 func GoingBankrupt(acs []*Accounting) bool {
+	if len(acs) == 0 {
+		log.Println("no data")
+	}
 	bankrupt := true
 	for _, ac := range acs {
 		if ac.PL == nil {
@@ -82,7 +86,6 @@ func GoingBankrupt(acs []*Accounting) bool {
 		}
 	}
 	if bankrupt {
-		log.Printf("PL too bad.")
 		return true
 	}
 
@@ -95,9 +98,9 @@ func GoingBankrupt(acs []*Accounting) bool {
 			bankrupt = false
 			break
 		}
+		log.Println(ac.BS.profitJouyoMoney, ac.BS.jikoshihonRatio)
 	}
 	if bankrupt {
-		log.Printf("BS too bad.")
 		return true
 	}
 
@@ -112,7 +115,6 @@ func GoingBankrupt(acs []*Accounting) bool {
 		}
 	}
 	if bankrupt {
-		log.Printf("CF too bad.")
 		return true
 	}
 
@@ -126,10 +128,20 @@ func GoingBankrupt(acs []*Accounting) bool {
 			break
 		}
 	}
-	if bankrupt {
-		log.Printf("Too many fusai.")
-		return true
-	}
+	return bankrupt
+}
 
-	return false
+func IsGrowing(acs []*Accounting) bool {
+	sort.Slice(acs, func(i, j int) bool {
+		return acs[i].Date.Before(acs[j].Date)
+	})
+	for i := 0; i < len(acs)-1; i++ {
+		if acs[i].PL == nil || acs[i+1].PL == nil {
+			return false
+		}
+		if acs[i].PL.keijoProfit >= acs[i+1].PL.keijoProfit {
+			return false
+		}
+	}
+	return true
 }

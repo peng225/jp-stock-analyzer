@@ -26,6 +26,11 @@ func main() {
 	candidateCode := make([]string, 0, 128)
 	for code, acs := range acList {
 		if accounting.GoingBankrupt(acs) {
+			log.Printf("code %s is going bankrupt or has enough data.", code)
+			continue
+		}
+		if !accounting.IsGrowing(acs) {
+			log.Printf("code %s is not growing.", code)
 			continue
 		}
 		candidateCode = append(candidateCode, code)
