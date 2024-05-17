@@ -16,7 +16,10 @@ const (
 	dateIndex = 1
 
 	// BL
-	jikoshihonRatioIndex = 9
+	profitJouyoMoneyIndex      = 5
+	shortTermKariireMoenyIndex = 6
+	longTermKariireMoenyIndex  = 7
+	jikoshihonRatioIndex       = 9
 
 	// PS
 	eigyoProfitIndex = 3
@@ -26,41 +29,12 @@ const (
 	roaIndex         = 8
 
 	// CF
-	eigyoCFIndex = 2
+	eigyoCFIndex           = 2
+	genkinDoutouButsuIndex = 6
 )
 
-type PLLoader struct {
-	fileName string
-}
-
-type BSLoader struct {
-	fileName string
-}
-
-type CFLoader struct {
-	fileName string
-}
-
-func NewPLLoader(fileName string) *PLLoader {
-	return &PLLoader{
-		fileName: fileName,
-	}
-}
-
-func NewBSLoader(fileName string) *BSLoader {
-	return &BSLoader{
-		fileName: fileName,
-	}
-}
-
-func NewCFLoader(fileName string) *CFLoader {
-	return &CFLoader{
-		fileName: fileName,
-	}
-}
-
-func (p *PLLoader) Load(acList map[string][]*accounting.Accounting) {
-	f, err := os.Open(p.fileName)
+func LoadPL(fileName string, acList map[string][]*accounting.Accounting) {
+	f, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -127,8 +101,8 @@ func (p *PLLoader) Load(acList map[string][]*accounting.Accounting) {
 	}
 }
 
-func (b *BSLoader) Load(acList map[string][]*accounting.Accounting) {
-	f, err := os.Open(b.fileName)
+func LoadBS(fileName string, acList map[string][]*accounting.Accounting) {
+	f, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -147,12 +121,27 @@ func (b *BSLoader) Load(acList map[string][]*accounting.Accounting) {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+		pjMoney, err := strconv.ParseInt(row[profitJouyoMoneyIndex], 10, 64)
+		if err != nil {
+			log.Println(err.Error())
+			continue
+		}
+		stkMoney, err := strconv.ParseInt(row[shortTermKariireMoenyIndex], 10, 64)
+		if err != nil {
+			log.Println(err.Error())
+			continue
+		}
+		ltkMoney, err := strconv.ParseInt(row[longTermKariireMoenyIndex], 10, 64)
+		if err != nil {
+			log.Println(err.Error())
+			continue
+		}
 		jsRatio, err := strconv.ParseFloat(row[jikoshihonRatioIndex], 64)
 		if err != nil {
 			log.Println(err.Error())
 			continue
 		}
-		newBS := accounting.NewBalanceSheet(jsRatio)
+		newBS := accounting.NewBalanceSheet(pjMoney, stkMoney, ltkMoney, jsRatio)
 		if _, ok := acList[code]; !ok {
 			newAc := accounting.NewAccounting(date, nil, newBS, nil)
 			acList[code] = []*accounting.Accounting{
@@ -176,8 +165,8 @@ func (b *BSLoader) Load(acList map[string][]*accounting.Accounting) {
 	}
 }
 
-func (c *CFLoader) Load(acList map[string][]*accounting.Accounting) {
-	f, err := os.Open(c.fileName)
+func LoadCF(fileName string, acList map[string][]*accounting.Accounting) {
+	f, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -201,7 +190,12 @@ func (c *CFLoader) Load(acList map[string][]*accounting.Accounting) {
 			log.Println(err.Error())
 			continue
 		}
-		newCF := accounting.NewCashFlow(eigyoCF)
+		gdb, err := strconv.ParseInt(row[genkinDoutouButsuIndex], 10, 64)
+		if err != nil {
+			log.Println(err.Error())
+			continue
+		}
+		newCF := accounting.NewCashFlow(eigyoCF, gdb)
 		if _, ok := acList[code]; !ok {
 			newAc := accounting.NewAccounting(date, nil, nil, newCF)
 			acList[code] = []*accounting.Accounting{
