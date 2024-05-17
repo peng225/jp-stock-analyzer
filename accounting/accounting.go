@@ -98,7 +98,6 @@ func GoingBankrupt(acs []*Accounting) bool {
 			bankrupt = false
 			break
 		}
-		log.Println(ac.BS.profitJouyoMoney, ac.BS.jikoshihonRatio)
 	}
 	if bankrupt {
 		return true
