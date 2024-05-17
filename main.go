@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sort"
 
 	"github.com/jp-stock-analyzer/accounting"
 	"github.com/jp-stock-analyzer/loader"
@@ -11,16 +12,24 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 
 	acList := make(map[string][]*accounting.Accounting, 0)
-	bsLoader := loader.NewBSLoader("fy-balance-sheet.csv")
-	bsLoader.Load(acList)
+	loader.LoadPL("data/2023/fy-profit-and-loss.csv", acList)
+	loader.LoadPL("data/2022/fy-profit-and-loss.csv", acList)
+	loader.LoadBS("data/2023/fy-balance-sheet.csv", acList)
+	loader.LoadBS("data/2022/fy-balance-sheet.csv", acList)
+	loader.LoadCF("data/2023/fy-cash-flow-statement.csv", acList)
+	loader.LoadCF("data/2022/fy-cash-flow-statement.csv", acList)
 
-	plLoader := loader.NewPLLoader("fy-profit-and-loss.csv")
-	plLoader.Load(acList)
+	if len(acList) == 0 {
+		log.Fatal("acList should not be empty.")
+	}
 
-	cfLoader := loader.NewCFLoader("fy-cash-flow-statement.csv")
-	cfLoader.Load(acList)
-
-	log.Println(acList["9914"][0].PL)
-	log.Println(acList["9914"][0].BS)
-	log.Println(acList["9914"][0].CF)
+	candidateCode := make([]string, 0, 128)
+	for code, acs := range acList {
+		if accounting.GoingBankrupt(acs) {
+			continue
+		}
+		candidateCode = append(candidateCode, code)
+	}
+	sort.Strings(candidateCode)
+	log.Println(candidateCode)
 }
