@@ -26,6 +26,9 @@ func main() {
 	loader.LoadCF("data/2023/fy-cash-flow-statement.csv", acList)
 	loader.LoadCF("data/2022/fy-cash-flow-statement.csv", acList)
 	loader.LoadCF("data/2021/fy-cash-flow-statement.csv", acList)
+	loader.LoadStockDividend("data/2023/fy-stock-dividend.csv", acList)
+	loader.LoadStockDividend("data/2022/fy-stock-dividend.csv", acList)
+	loader.LoadStockDividend("data/2021/fy-stock-dividend.csv", acList)
 
 	if len(acList) == 0 {
 		log.Fatal("acList should not be empty.")
@@ -33,7 +36,7 @@ func main() {
 
 	candidateCode := make([]string, 0, 128)
 	for code, acs := range acList {
-		if accounting.GoingBankrupt(acs) {
+		if accounting.Risky(acs) {
 			if verbose {
 				log.Printf("code %s is going bankrupt or does not have enough data.", code)
 			}

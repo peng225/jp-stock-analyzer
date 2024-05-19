@@ -11,6 +11,7 @@ type Accounting struct {
 	PL   *ProfitLoss
 	BS   *BalanceSheet
 	CF   *CashFlow
+	SD   *StockDividend
 }
 
 type ProfitLoss struct {
@@ -33,13 +34,18 @@ type CashFlow struct {
 	genkinDoutouButsu int64
 }
 
+type StockDividend struct {
+	haitouSeikou float64
+}
+
 func NewAccounting(date time.Time, pl *ProfitLoss,
-	bs *BalanceSheet, cf *CashFlow) *Accounting {
+	bs *BalanceSheet, cf *CashFlow, sd *StockDividend) *Accounting {
 	return &Accounting{
 		Date: date,
 		PL:   pl,
 		BS:   bs,
 		CF:   cf,
+		SD:   sd,
 	}
 }
 
@@ -71,74 +77,73 @@ func NewCashFlow(eigyoCF, gdb int64) *CashFlow {
 	}
 }
 
-func GoingBankrupt(acs []*Accounting) bool {
+func NewStockDividend(hs float64) *StockDividend {
+	return &StockDividend{
+		haitouSeikou: hs,
+	}
+}
+
+func Risky(acs []*Accounting) bool {
 	if len(acs) == 0 {
 		log.Println("no data")
 	}
-	bankrupt := true
-	for _, ac := range acs {
-		if ac.PL == nil {
-			continue
-		}
-		if ac.PL.netProfit > 0 {
-			bankrupt = false
-			break
-		}
-	}
-	if bankrupt {
-		return true
+
+	riskyConditions := []func(ac *Accounting) bool{
+		func(ac *Accounting) bool {
+			return ac.PL == nil || ac.PL.netProfit <= 0
+		},
+		func(ac *Accounting) bool {
+			return ac.BS == nil || ac.BS.profitJouyoMoney <= 0 || ac.BS.jikoshihonRatio < 20
+		},
+		func(ac *Accounting) bool {
+			return ac.CF == nil || ac.CF.eigyoCF <= 0
+		},
+		func(ac *Accounting) bool {
+			return ac.BS == nil || ac.CF == nil ||
+				ac.CF.genkinDoutouButsu <= ac.BS.shortTermKariireMoeny+ac.BS.longTermKariireMoeny
+		},
+		func(ac *Accounting) bool {
+			return ac.PL == nil || ac.PL.roe/ac.PL.roa >= 3.0
+		},
+		func(ac *Accounting) bool {
+			return ac.SD == nil || ac.SD.haitouSeikou <= 20.0 || 50.0 <= ac.SD.haitouSeikou
+		},
 	}
 
-	bankrupt = true
-	for _, ac := range acs {
-		if ac.BS == nil {
-			continue
-		}
-		if ac.BS.profitJouyoMoney > 0 && ac.BS.jikoshihonRatio >= 20 {
-			bankrupt = false
-			break
+	for _, riskyCondition := range riskyConditions {
+		for _, ac := range acs {
+			if riskyCondition(ac) {
+				return true
+			}
 		}
 	}
-	if bankrupt {
-		return true
-	}
-
-	bankrupt = true
-	for _, ac := range acs {
-		if ac.CF == nil {
-			continue
-		}
-		if ac.CF.eigyoCF > 0 {
-			bankrupt = false
-			break
-		}
-	}
-	if bankrupt {
-		return true
-	}
-
-	bankrupt = true
-	for _, ac := range acs {
-		if ac.BS == nil || ac.CF == nil {
-			continue
-		}
-		if ac.CF.genkinDoutouButsu > ac.BS.shortTermKariireMoeny+ac.BS.longTermKariireMoeny {
-			bankrupt = false
-			break
-		}
-	}
-	return bankrupt
+	return false
 }
 
 func IsGrowing(acs []*Accounting) bool {
 	sort.Slice(acs, func(i, j int) bool {
 		return acs[i].Date.Before(acs[j].Date)
 	})
+	if len(acs) < 2 {
+		return false
+	}
 	for i := 0; i < len(acs)-1; i++ {
 		if acs[i].PL == nil || acs[i+1].PL == nil {
 			return false
 		}
 		if acs[i].PL.keijoProfit >= acs[i+1].PL.keijoProfit {
+			return false
+		}
+		if acs[i].PL.keijoProfit < 0 || acs[i+1].PL.keijoProfit < 0 {
+			return false
+		}
+		if float64(acs[i+1].PL.keijoProfit)/float64(acs[i].PL.keijoProfit) < 1.08 {
+			return false
+		}
+	}
+
+	for _, ac := range acs {
+		if ac.PL.roe < 10 {
 			return false
 		}
 	}
