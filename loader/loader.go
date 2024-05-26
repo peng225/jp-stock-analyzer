@@ -22,6 +22,7 @@ const (
 	jikoshihonRatioIndex       = 9
 
 	// PS
+	revenueIndex     = 2
 	eigyoProfitIndex = 3
 	keijoProfitIndex = 4
 	netProftIndex    = 5
@@ -56,6 +57,13 @@ func LoadPL(fileName string, acList map[string][]*accounting.Accounting) {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+		revenue, err := strconv.ParseInt(row[revenueIndex], 10, 64)
+		if err != nil {
+			if row[revenueIndex] == "-" {
+				continue
+			}
+			log.Fatal(err.Error())
+		}
 		eigyoProfit, err := strconv.ParseInt(row[eigyoProfitIndex], 10, 64)
 		if err != nil {
 			if row[eigyoProfitIndex] == "-" {
@@ -85,7 +93,7 @@ func LoadPL(fileName string, acList map[string][]*accounting.Accounting) {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		newPL := accounting.NewProfitLoss(eigyoProfit, keijoProfit,
+		newPL := accounting.NewProfitLoss(revenue, eigyoProfit, keijoProfit,
 			netProfit, roe, roa)
 		if _, ok := acList[code]; !ok {
 			newAc := accounting.NewAccounting(date, newPL, nil, nil, nil)

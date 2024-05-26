@@ -15,6 +15,7 @@ type Accounting struct {
 }
 
 type ProfitLoss struct {
+	revenue     int64
 	eigyoProfit int64
 	keijoProfit int64
 	netProfit   int64
@@ -49,9 +50,10 @@ func NewAccounting(date time.Time, pl *ProfitLoss,
 	}
 }
 
-func NewProfitLoss(eigyoProfit, keijoProfit,
+func NewProfitLoss(revenue, eigyoProfit, keijoProfit,
 	netProfit int64, roe, roa float64) *ProfitLoss {
 	return &ProfitLoss{
+		revenue:     revenue,
 		eigyoProfit: eigyoProfit,
 		keijoProfit: keijoProfit,
 		netProfit:   netProfit,
@@ -128,6 +130,7 @@ func IsGrowing(acs []*Accounting) bool {
 		return false
 	}
 	for i := 0; i < len(acs)-1; i++ {
+		// Check the growth of the keijo profit.
 		if acs[i].PL == nil || acs[i+1].PL == nil {
 			return false
 		}
@@ -140,10 +143,27 @@ func IsGrowing(acs []*Accounting) bool {
 		if float64(acs[i+1].PL.keijoProfit)/float64(acs[i].PL.keijoProfit) < 1.08 {
 			return false
 		}
+
+		// Check the growth of the revenue.
+		if acs[i].PL == nil || acs[i+1].PL == nil {
+			return false
+		}
+		if acs[i].PL.revenue >= acs[i+1].PL.revenue {
+			return false
+		}
+		if acs[i].PL.revenue < 0 || acs[i+1].PL.revenue < 0 {
+			return false
+		}
+		if float64(acs[i+1].PL.revenue)/float64(acs[i].PL.revenue) < 1.08 {
+			return false
+		}
 	}
 
 	for _, ac := range acs {
 		if ac.PL.roe < 10 {
+			return false
+		}
+		if ac.PL.roa < 5 {
 			return false
 		}
 	}
