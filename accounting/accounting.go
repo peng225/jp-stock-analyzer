@@ -25,8 +25,8 @@ type ProfitLoss struct {
 
 type BalanceSheet struct {
 	profitJouyoMoney      int64
-	shortTermKariireMoeny int64
-	longTermKariireMoeny  int64
+	shortTermKariireMoney int64
+	longTermKariireMoney  int64
 	jikoshihonRatio       float64
 }
 
@@ -62,12 +62,12 @@ func NewProfitLoss(revenue, eigyoProfit, keijoProfit,
 	}
 }
 
-func NewBalanceSheet(profitJouyoMoney, stkMoey, ltkMoney int64,
+func NewBalanceSheet(profitJouyoMoney, stkMoney, ltkMoney int64,
 	jikoshihonRatio float64) *BalanceSheet {
 	return &BalanceSheet{
 		profitJouyoMoney:      profitJouyoMoney,
-		shortTermKariireMoeny: stkMoey,
-		longTermKariireMoeny:  ltkMoney,
+		shortTermKariireMoney: stkMoney,
+		longTermKariireMoney:  ltkMoney,
 		jikoshihonRatio:       jikoshihonRatio,
 	}
 }
@@ -102,7 +102,7 @@ func Risky(acs []*Accounting) bool {
 		},
 		func(ac *Accounting) bool {
 			return ac.BS == nil || ac.CF == nil ||
-				ac.CF.genkinDoutouButsu <= ac.BS.shortTermKariireMoeny+ac.BS.longTermKariireMoeny
+				ac.CF.genkinDoutouButsu <= ac.BS.shortTermKariireMoney+ac.BS.longTermKariireMoney
 		},
 		func(ac *Accounting) bool {
 			return ac.PL == nil || ac.PL.roe/ac.PL.roa >= 3.0
