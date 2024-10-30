@@ -13,6 +13,8 @@ func main() {
 	log.SetFlags(log.Lshortfile)
 
 	var verbose bool
+	var code string
+	flag.StringVar(&code, "c", "", "stock code")
 	flag.BoolVar(&verbose, "v", false, "enable verbose mode")
 	flag.Parse()
 
@@ -32,6 +34,15 @@ func main() {
 
 	if len(acList) == 0 {
 		log.Fatal("acList should not be empty.")
+	}
+
+	if code != "" {
+		acs := acList[code]
+		if accounting.Risky(acs) {
+			log.Printf("code %s is going bankrupt or does not have enough data.", code)
+		}
+		accounting.Evaluate(acs)
+		return
 	}
 
 	candidateCode := make([]string, 0, 128)
