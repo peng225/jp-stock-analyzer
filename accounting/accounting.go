@@ -220,6 +220,6 @@ func Evaluate(acs []*Accounting) {
 		p := message.NewPrinter(language.English)
 		p.Printf("ac[%d].PL.keijoProfit: %d\n", i, ac.PL.keijoProfit)
 		p.Printf("ac[%d].PL.roe: %f\n", i, ac.PL.roe)
-		p.Printf("ac[%d].PL.roe: %f\n", i, ac.PL.roa)
+		p.Printf("ac[%d].PL.roa: %f\n", i, ac.PL.roa)
 	}
 }
