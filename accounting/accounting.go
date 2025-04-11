@@ -113,22 +113,28 @@ func Risky(acs []*Accounting) bool {
 	}
 
 	riskyConditions := []func(ac *Accounting) bool{
+		// #0
 		func(ac *Accounting) bool {
 			return ac.PL == nil || ac.PL.netProfit <= 0
 		},
+		// #1
 		func(ac *Accounting) bool {
 			return ac.BS == nil || ac.BS.profitJouyoMoney <= 0 || ac.BS.jikoshihonRatio < 20
 		},
+		// #2
 		func(ac *Accounting) bool {
 			return ac.CF == nil || ac.CF.eigyoCF <= 0
 		},
+		// #3
 		func(ac *Accounting) bool {
 			return ac.BS == nil || ac.CF == nil ||
 				ac.CF.genkinDoutouButsu <= ac.BS.shortTermKariireMoney+ac.BS.longTermKariireMoney
 		},
+		// #4
 		func(ac *Accounting) bool {
 			return ac.PL == nil || ac.PL.roe/ac.PL.roa >= 3.0
 		},
+		// #5
 		func(ac *Accounting) bool {
 			return ac.SD == nil || ac.SD.haitouSeikou <= 20.0 || 50.0 <= ac.SD.haitouSeikou
 		},
