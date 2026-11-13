@@ -18,22 +18,40 @@ func main() {
 	flag.BoolVar(&verbose, "v", false, "enable verbose mode")
 	flag.Parse()
 
+	fileNames := []struct {
+		pl string
+		bs string
+		cf string
+		sd string
+	}{
+		{
+			pl: "data/2025/fy-profit-and-loss.csv",
+			bs: "data/2025/fy-balance-sheet.csv",
+			cf: "data/2025/fy-cash-flow-statement.csv",
+			sd: "data/2025/fy-stock-dividend.csv",
+		},
+		{
+			pl: "data/2024/fy-profit-and-loss.csv",
+			bs: "data/2024/fy-balance-sheet.csv",
+			cf: "data/2024/fy-cash-flow-statement.csv",
+			sd: "data/2024/fy-stock-dividend.csv",
+		},
+		{
+			pl: "data/2023/fy-profit-and-loss.csv",
+			bs: "data/2023/fy-balance-sheet.csv",
+			cf: "data/2023/fy-cash-flow-statement.csv",
+			sd: "data/2023/fy-stock-dividend.csv",
+		},
+	}
+
 	acList := make(map[string][]*accounting.Accounting, 0)
-	loader.LoadPL("data/2025/fy-profit-and-loss.csv", acList)
-	loader.LoadPL("data/2024/fy-profit-and-loss.csv", acList)
-	loader.LoadPL("data/2023/fy-profit-and-loss.csv", acList)
+	for _, fileName := range fileNames {
+		loader.LoadPL(fileName.pl, acList)
+		loader.LoadBS(fileName.bs, acList)
+		loader.LoadCF(fileName.cf, acList)
+		loader.LoadStockDividend(fileName.sd, acList)
 
-	loader.LoadBS("data/2025/fy-balance-sheet.csv", acList)
-	loader.LoadBS("data/2024/fy-balance-sheet.csv", acList)
-	loader.LoadBS("data/2023/fy-balance-sheet.csv", acList)
-
-	loader.LoadCF("data/2025/fy-cash-flow-statement.csv", acList)
-	loader.LoadCF("data/2024/fy-cash-flow-statement.csv", acList)
-	loader.LoadCF("data/2023/fy-cash-flow-statement.csv", acList)
-
-	loader.LoadStockDividend("data/2025/fy-stock-dividend.csv", acList)
-	loader.LoadStockDividend("data/2024/fy-stock-dividend.csv", acList)
-	loader.LoadStockDividend("data/2023/fy-stock-dividend.csv", acList)
+	}
 
 	if len(acList) == 0 {
 		log.Fatal("acList should not be empty.")
