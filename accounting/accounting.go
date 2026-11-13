@@ -1,6 +1,7 @@
 package accounting
 
 import (
+	"fmt"
 	"log"
 	"sort"
 	"time"
@@ -8,6 +9,8 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
+
+var errNoData error = fmt.Errorf("no data")
 
 type Accounting struct {
 	Date time.Time
@@ -97,62 +100,62 @@ func Risky(acs []*Accounting) bool {
 		return acs[i].Date.Before(acs[j].Date)
 	})
 
-	noDataConditions := []func(ac *Accounting) bool{
-		func(ac *Accounting) bool {
-			return ac.PL == nil
-		},
-		func(ac *Accounting) bool {
-			return ac.BS == nil
-		},
-		func(ac *Accounting) bool {
-			return ac.CF == nil
-		},
-		func(ac *Accounting) bool {
-			return ac.SD == nil
-		},
-	}
-
-	riskyConditions := []func(ac *Accounting) bool{
+	riskyConditions := []func(ac *Accounting) (bool, error){
 		// #0
-		func(ac *Accounting) bool {
-			return ac.PL == nil || ac.PL.netProfit <= 0
+		func(ac *Accounting) (bool, error) {
+			if ac.PL == nil {
+				return true, fmt.Errorf("PL is nil: %w", errNoData)
+			}
+			return ac.PL.netProfit <= 0, nil
 		},
 		// #1
-		func(ac *Accounting) bool {
-			return ac.BS == nil || ac.BS.profitJouyoMoney <= 0 || ac.BS.jikoshihonRatio < 20
+		func(ac *Accounting) (bool, error) {
+			if ac.BS == nil {
+				return true, fmt.Errorf("BS is nil: %w", errNoData)
+			}
+			return ac.BS.profitJouyoMoney <= 0 || ac.BS.jikoshihonRatio < 20, nil
 		},
 		// #2
-		func(ac *Accounting) bool {
-			return ac.CF == nil || ac.CF.eigyoCF <= 0
+		func(ac *Accounting) (bool, error) {
+			if ac.CF == nil {
+				return true, fmt.Errorf("CF is nil: %w", errNoData)
+			}
+			return ac.CF.eigyoCF <= 0, nil
 		},
 		// #3
-		func(ac *Accounting) bool {
-			return ac.BS == nil || ac.CF == nil ||
-				ac.CF.genkinDoutouButsu <= ac.BS.shortTermKariireMoney+ac.BS.longTermKariireMoney
+		func(ac *Accounting) (bool, error) {
+			if ac.BS == nil {
+				return true, fmt.Errorf("BS is nil: %w", errNoData)
+			}
+			if ac.CF == nil {
+				return true, fmt.Errorf("CF is nil: %w", errNoData)
+			}
+			return ac.CF.genkinDoutouButsu <= ac.BS.shortTermKariireMoney+ac.BS.longTermKariireMoney, nil
 		},
 		// #4
-		func(ac *Accounting) bool {
-			return ac.PL == nil || ac.PL.roe/ac.PL.roa >= 3.0
+		func(ac *Accounting) (bool, error) {
+			if ac.PL == nil {
+				return true, fmt.Errorf("PL is nil: %w", errNoData)
+			}
+			return ac.PL.roe/ac.PL.roa >= 3.0, nil
 		},
 		// #5
-		func(ac *Accounting) bool {
-			return ac.SD == nil || ac.SD.haitouSeikou <= 20.0 || 50.0 <= ac.SD.haitouSeikou
-		},
-	}
-
-	for _, noDataCondition := range noDataConditions {
-		for _, ac := range acs {
-			if noDataCondition(ac) {
-				log.Println("no data")
-				return true
+		func(ac *Accounting) (bool, error) {
+			if ac.SD == nil {
+				return true, fmt.Errorf("SD is nil: %w", errNoData)
 			}
-		}
+			return ac.SD.haitouSeikou <= 20.0 || 50.0 <= ac.SD.haitouSeikou, nil
+		},
 	}
 
 	risky := false
 	for i, riskyCondition := range riskyConditions {
 		for j, ac := range acs {
-			if riskyCondition(ac) {
+			r, err := riskyCondition(ac)
+			if err != nil {
+				log.Printf("riskyConditions[%d] returned error for ac[%d]. err: %v", i, j, err)
+				risky = true
+			} else if r {
 				log.Printf("riskyConditions[%d] met for ac[%d].", i, j)
 				risky = true
 			}
