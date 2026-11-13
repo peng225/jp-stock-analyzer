@@ -169,11 +169,14 @@ func Risky(acs []*Accounting, verbose bool) bool {
 	return risky
 }
 
-func IsGrowing(acs []*Accounting) bool {
+func IsGrowing(acs []*Accounting, strict bool) bool {
 	sort.Slice(acs, func(i, j int) bool {
 		return acs[i].Date.Before(acs[j].Date)
 	})
 	if len(acs) < 2 {
+		return false
+	}
+	if strict && len(acs) < 3 {
 		return false
 	}
 	for i := 0; i < len(acs)-1; i++ {

@@ -14,8 +14,10 @@ func main() {
 
 	var code string
 	var verbose bool
+	var strict bool
 	flag.StringVar(&code, "c", "", "stock code")
 	flag.BoolVar(&verbose, "v", false, "enable verbose mode")
+	flag.BoolVar(&strict, "s", false, "enable strict mode")
 	flag.Parse()
 
 	fileNames := []struct {
@@ -50,7 +52,6 @@ func main() {
 		loader.LoadBS(fileName.bs, acList)
 		loader.LoadCF(fileName.cf, acList)
 		loader.LoadStockDividend(fileName.sd, acList)
-
 	}
 
 	if len(acList) == 0 {
@@ -76,7 +77,7 @@ func main() {
 			}
 			continue
 		}
-		if !accounting.IsGrowing(acs) {
+		if !accounting.IsGrowing(acs, strict) {
 			if verbose {
 				log.Printf("code %s is not growing.", code)
 			}
