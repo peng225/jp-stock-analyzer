@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"time"
 
 	"golang.org/x/text/language"
@@ -231,8 +232,9 @@ func Evaluate(acs []*Accounting) {
 			continue
 		}
 		p := message.NewPrinter(language.English)
-		p.Printf("ac[%d].PL.keijoProfit: %d\n", i, ac.PL.keijoProfit)
-		p.Printf("ac[%d].PL.roe: %f\n", i, ac.PL.roe)
-		p.Printf("ac[%d].PL.roa: %f\n", i, ac.PL.roa)
+		p.Printf("== %s ==\n", strconv.Itoa(ac.Date.Year()))
+		p.Printf("PL.keijoProfit: %d\n", ac.PL.keijoProfit)
+		p.Printf("PL.roe: %f\n", ac.PL.roe)
+		p.Printf("PL.roa: %f\n", ac.PL.roa)
 	}
 }

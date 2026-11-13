@@ -61,6 +61,8 @@ func main() {
 		acs := acList[code]
 		if accounting.Risky(acs, verbose) {
 			log.Printf("code %s is going bankrupt or does not have enough data.", code)
+		} else {
+			log.Printf("code %s is safe.", code)
 		}
 		accounting.Evaluate(acs)
 		return
