@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jp-stock-analyzer/accounting"
+	"github.com/peng225/jp-stock-analyzer/accounting"
 )
 
 const (

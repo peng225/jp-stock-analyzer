@@ -5,8 +5,8 @@ import (
 	"log"
 	"sort"
 
-	"github.com/jp-stock-analyzer/accounting"
-	"github.com/jp-stock-analyzer/loader"
+	"github.com/peng225/jp-stock-analyzer/accounting"
+	"github.com/peng225/jp-stock-analyzer/loader"
 )
 
 func main() {
