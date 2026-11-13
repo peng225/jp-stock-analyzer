@@ -25,7 +25,7 @@ const (
 	revenueIndex     = 2
 	eigyoProfitIndex = 3
 	keijoProfitIndex = 4
-	netProftIndex    = 5
+	netProfitIndex   = 5
 	roeIndex         = 7
 	roaIndex         = 8
 
@@ -36,6 +36,10 @@ const (
 	// Stock dividend
 	haitouSeikouIndex = 5
 )
+
+func isBlank(data string) bool {
+	return data == "-"
+}
 
 func LoadPL(fileName string, acList map[string][]*accounting.Accounting) {
 	f, err := os.Open(fileName)
@@ -57,42 +61,55 @@ func LoadPL(fileName string, acList map[string][]*accounting.Accounting) {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
+		if isBlank(row[revenueIndex]) {
+			continue
+		}
 		revenue, err := strconv.ParseInt(row[revenueIndex], 10, 64)
 		if err != nil {
-			if row[revenueIndex] == "-" {
-				continue
-			}
 			log.Fatal(err.Error())
+		}
+
+		if isBlank(row[eigyoProfitIndex]) {
+			continue
 		}
 		eigyoProfit, err := strconv.ParseInt(row[eigyoProfitIndex], 10, 64)
 		if err != nil {
-			if row[eigyoProfitIndex] == "-" {
-				continue
-			}
 			log.Fatal(err.Error())
+		}
+
+		if isBlank(row[keijoProfitIndex]) {
+			continue
 		}
 		keijoProfit, err := strconv.ParseInt(row[keijoProfitIndex], 10, 64)
 		if err != nil {
-			if row[keijoProfitIndex] == "-" {
-				continue
-			}
 			log.Fatal(err.Error())
 		}
-		netProfit, err := strconv.ParseInt(row[netProftIndex], 10, 64)
+
+		if isBlank(row[netProfitIndex]) {
+			continue
+		}
+		netProfit, err := strconv.ParseInt(row[netProfitIndex], 10, 64)
 		if err != nil {
 			log.Fatal(err.Error())
+		}
+
+		if isBlank(row[roeIndex]) {
+			continue
 		}
 		roe, err := strconv.ParseFloat(row[roeIndex], 64)
 		if err != nil {
-			if row[roeIndex] == "-" {
-				continue
-			}
 			log.Fatal(err.Error())
+		}
+
+		if isBlank(row[roaIndex]) {
+			continue
 		}
 		roa, err := strconv.ParseFloat(row[roaIndex], 64)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
 		newPL := accounting.NewProfitLoss(revenue, eigyoProfit, keijoProfit,
 			netProfit, roe, roa)
 		if _, ok := acList[code]; !ok {
@@ -138,36 +155,41 @@ func LoadBS(fileName string, acList map[string][]*accounting.Accounting) {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
+		if isBlank(row[profitJouyoMoneyIndex]) {
+			continue
+		}
 		pjMoney, err := strconv.ParseInt(row[profitJouyoMoneyIndex], 10, 64)
 		if err != nil {
-			if row[profitJouyoMoneyIndex] == "-" {
-				continue
-			}
 			log.Fatal(err.Error())
 		}
+
 		stkMoney, err := strconv.ParseInt(row[shortTermKariireMoenyIndex], 10, 64)
 		if err != nil {
-			if row[shortTermKariireMoenyIndex] == "-" {
+			if isBlank(row[shortTermKariireMoenyIndex]) {
 				stkMoney = 0
 			} else {
 				log.Fatal(err.Error())
 			}
 		}
+
 		ltkMoney, err := strconv.ParseInt(row[longTermKariireMoenyIndex], 10, 64)
 		if err != nil {
-			if row[longTermKariireMoenyIndex] == "-" {
+			if isBlank(row[longTermKariireMoenyIndex]) {
 				ltkMoney = 0
 			} else {
 				log.Fatal(err.Error())
 			}
 		}
+
+		if isBlank(row[jikoshihonRatioIndex]) {
+			continue
+		}
 		jsRatio, err := strconv.ParseFloat(row[jikoshihonRatioIndex], 64)
 		if err != nil {
-			if row[jikoshihonRatioIndex] == "-" {
-				continue
-			}
 			log.Fatal(err.Error())
 		}
+
 		newBS := accounting.NewBalanceSheet(pjMoney, stkMoney, ltkMoney, jsRatio)
 		if _, ok := acList[code]; !ok {
 			newAc := accounting.NewAccounting(date, nil, newBS, nil, nil)
@@ -212,18 +234,23 @@ func LoadCF(fileName string, acList map[string][]*accounting.Accounting) {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
+		if isBlank(row[eigyoCFIndex]) {
+			continue
+		}
 		eigyoCF, err := strconv.ParseInt(row[eigyoCFIndex], 10, 64)
 		if err != nil {
-			if row[eigyoCFIndex] == "-" {
-				continue
-			}
 			log.Fatal(err.Error())
+		}
+
+		if isBlank(row[genkinDoutouButsuIndex]) {
+			continue
 		}
 		gdb, err := strconv.ParseInt(row[genkinDoutouButsuIndex], 10, 64)
 		if err != nil {
-			log.Println(err.Error())
-			continue
+			log.Fatal(err.Error())
 		}
+
 		newCF := accounting.NewCashFlow(eigyoCF, gdb)
 		if _, ok := acList[code]; !ok {
 			newAc := accounting.NewAccounting(date, nil, nil, newCF, nil)
@@ -268,13 +295,15 @@ func LoadStockDividend(fileName string, acList map[string][]*accounting.Accounti
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
+		if isBlank(row[haitouSeikouIndex]) {
+			continue
+		}
 		haitouSeikou, err := strconv.ParseFloat(row[haitouSeikouIndex], 64)
 		if err != nil {
-			if row[haitouSeikouIndex] == "-" {
-				continue
-			}
 			log.Fatal(err.Error())
 		}
+
 		newSD := accounting.NewStockDividend(haitouSeikou)
 		if _, ok := acList[code]; !ok {
 			newAc := accounting.NewAccounting(date, nil, nil, nil, newSD)
