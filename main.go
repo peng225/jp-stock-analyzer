@@ -59,7 +59,7 @@ func main() {
 
 	if code != "" {
 		acs := acList[code]
-		if accounting.Risky(acs) {
+		if accounting.Risky(acs, verbose) {
 			log.Printf("code %s is going bankrupt or does not have enough data.", code)
 		}
 		accounting.Evaluate(acs)
@@ -68,7 +68,7 @@ func main() {
 
 	candidateCode := make([]string, 0, 128)
 	for code, acs := range acList {
-		if accounting.Risky(acs) {
+		if accounting.Risky(acs, verbose) {
 			if verbose {
 				log.Printf("code %s is going bankrupt or does not have enough data.", code)
 			}

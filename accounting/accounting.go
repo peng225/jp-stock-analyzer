@@ -91,7 +91,7 @@ func NewStockDividend(hs float64) *StockDividend {
 	}
 }
 
-func Risky(acs []*Accounting) bool {
+func Risky(acs []*Accounting, verbose bool) bool {
 	if len(acs) == 0 {
 		log.Println("no data")
 	}
@@ -153,10 +153,14 @@ func Risky(acs []*Accounting) bool {
 		for j, ac := range acs {
 			r, err := riskyCondition(ac)
 			if err != nil {
-				log.Printf("riskyConditions[%d] returned error for ac[%d]. err: %v", i, j, err)
+				if verbose {
+					log.Printf("riskyConditions[%d] returned error for ac[%d]. err: %v", i, j, err)
+				}
 				risky = true
 			} else if r {
-				log.Printf("riskyConditions[%d] met for ac[%d].", i, j)
+				if verbose {
+					log.Printf("riskyConditions[%d] met for ac[%d].", i, j)
+				}
 				risky = true
 			}
 		}
