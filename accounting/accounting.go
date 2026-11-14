@@ -234,10 +234,22 @@ func Evaluate(acs []*Accounting) {
 			log.Printf("ac[%d].PL is nil", i)
 			continue
 		}
+		if ac.BS == nil {
+			log.Printf("ac[%d].BS is nil", i)
+			continue
+		}
+		if ac.CF == nil {
+			log.Printf("ac[%d].CF is nil", i)
+			continue
+		}
 		p := message.NewPrinter(language.English)
 		p.Printf("== %s ==\n", strconv.Itoa(ac.Date.Year()))
+		p.Printf("PL.netProfit: %d\n", ac.PL.netProfit)
 		p.Printf("PL.keijoProfit: %d\n", ac.PL.keijoProfit)
 		p.Printf("PL.roe: %f\n", ac.PL.roe)
 		p.Printf("PL.roa: %f\n", ac.PL.roa)
+		p.Printf("BS.profitJouyoMoney: %d\n", ac.BS.profitJouyoMoney)
+		p.Printf("BS.jikoshihonRatio: %f\n", ac.BS.jikoshihonRatio)
+		p.Printf("CF.eigyoCF: %d\n", ac.CF.eigyoCF)
 	}
 }
