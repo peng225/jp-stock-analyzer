@@ -34,8 +34,8 @@ func TestSafeAndGrowing(t *testing.T) {
 	acList[code] = append(acList[code],
 		NewAccounting(time.Now().AddDate(1, 0, 0), pl, bs, cf, sd))
 
-	assert.False(t, Risky(acList[code]))
-	assert.True(t, IsGrowing(acList[code]))
+	assert.False(t, Risky(acList[code], false))
+	assert.True(t, IsGrowing(acList[code], false))
 }
 
 func TestRiskyAndNotGrowing(t *testing.T) {
@@ -64,6 +64,6 @@ func TestRiskyAndNotGrowing(t *testing.T) {
 	acList[code] = append(acList[code],
 		NewAccounting(time.Now().AddDate(1, 0, 0), pl, bs, cf, sd))
 
-	assert.True(t, Risky(acList[code]))
-	assert.False(t, IsGrowing(acList[code]))
+	assert.True(t, Risky(acList[code], false))
+	assert.False(t, IsGrowing(acList[code], false))
 }
