@@ -180,17 +180,17 @@ func IsGrowing(acs []*Accounting, strict bool) bool {
 		return false
 	}
 	for i := 0; i < len(acs)-1; i++ {
-		// Check the growth of the keijo profit.
+		// Check the growth of the net profit.
 		if acs[i].PL == nil || acs[i+1].PL == nil {
 			return false
 		}
-		if acs[i].PL.keijoProfit >= acs[i+1].PL.keijoProfit {
+		if acs[i].PL.netProfit >= acs[i+1].PL.netProfit {
 			return false
 		}
-		if acs[i].PL.keijoProfit < 0 || acs[i+1].PL.keijoProfit < 0 {
+		if acs[i].PL.netProfit < 0 || acs[i+1].PL.netProfit < 0 {
 			return false
 		}
-		if float64(acs[i+1].PL.keijoProfit)/float64(acs[i].PL.keijoProfit) < 1.08 {
+		if float64(acs[i+1].PL.netProfit)/float64(acs[i].PL.netProfit) < 1.08 {
 			return false
 		}
 
