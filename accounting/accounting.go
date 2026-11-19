@@ -190,7 +190,7 @@ func IsGrowing(acs []*Accounting, strict bool) bool {
 		if acs[i].PL.keijoProfit < 0 || acs[i+1].PL.keijoProfit < 0 {
 			return false
 		}
-		if float64(acs[i+1].PL.keijoProfit)/float64(acs[i].PL.keijoProfit) < 1.08 {
+		if float64(acs[i+1].PL.keijoProfit)/float64(acs[i].PL.keijoProfit) < 1.05 {
 			return false
 		}
 
@@ -204,7 +204,7 @@ func IsGrowing(acs []*Accounting, strict bool) bool {
 		if acs[i].PL.revenue < 0 || acs[i+1].PL.revenue < 0 {
 			return false
 		}
-		if float64(acs[i+1].PL.revenue)/float64(acs[i].PL.revenue) < 1.08 {
+		if float64(acs[i+1].PL.revenue)/float64(acs[i].PL.revenue) < 1.05 {
 			return false
 		}
 	}

@@ -53,7 +53,7 @@ func TestRiskyAndNotGrowing(t *testing.T) {
 		NewAccounting(time.Now(), pl, bs, cf, sd),
 	}
 
-	pl = NewProfitLoss(105, 100, 80, 60, 11, 6)
+	pl = NewProfitLoss(104, 100, 80, 60, 11, 6)
 	require.NotNil(t, pl)
 	bs = NewBalanceSheet(200, 200, 500, 35)
 	require.NotNil(t, bs)
