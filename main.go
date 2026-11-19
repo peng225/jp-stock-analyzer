@@ -2,17 +2,50 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"sort"
+	"time"
 
 	"github.com/peng225/jp-stock-analyzer/accounting"
 	"github.com/peng225/jp-stock-analyzer/loader"
 )
 
-func main() {
-	log.SetFlags(log.Lshortfile)
+var logLevel = new(slog.LevelVar)
 
+func init() {
+	rootDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	opts := &slog.HandlerOptions{
+		Level:     logLevel,
+		AddSource: true,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			switch a.Key {
+			case slog.TimeKey:
+				if t, ok := a.Value.Any().(time.Time); ok {
+					a.Value = slog.StringValue(t.Format("2006-01-02 15:04:05"))
+				}
+			case slog.SourceKey:
+				if src, ok := a.Value.Any().(*slog.Source); ok {
+					if rel, err := filepath.Rel(rootDir, src.File); err == nil {
+						src.File = rel
+					}
+				}
+			}
+			return a
+		},
+	}
+
+	logger := slog.New(slog.NewTextHandler(os.Stdout, opts))
+	slog.SetDefault(logger)
+}
+
+func main() {
 	var code string
 	var verbose bool
 	var strict bool
@@ -20,6 +53,10 @@ func main() {
 	flag.BoolVar(&verbose, "v", false, "enable verbose mode")
 	flag.BoolVar(&strict, "s", false, "enable strict mode")
 	flag.Parse()
+
+	if !verbose {
+		logLevel.Set(slog.LevelWarn)
+	}
 
 	fileNames := []struct {
 		pl string
@@ -56,15 +93,16 @@ func main() {
 	}
 
 	if len(acList) == 0 {
-		log.Fatal("acList should not be empty.")
+		slog.Error("acList should not be empty.")
+		os.Exit(1)
 	}
 
 	if code != "" {
 		acs := acList[code]
-		if risky, unknown := accounting.Risky(acs, verbose); risky || unknown {
-			log.Printf("code %s is risky or does not have enough data.", code)
+		if risky, unknown := accounting.Risky(acs); risky || unknown {
+			fmt.Printf("code %s is risky or does not have enough data.\n", code)
 		} else {
-			log.Printf("code %s is safe.", code)
+			fmt.Printf("code %s is safe.\n", code)
 		}
 		accounting.Evaluate(acs)
 		return
@@ -72,23 +110,17 @@ func main() {
 
 	candidateCode := make([]string, 0, 128)
 	for code, acs := range acList {
-		if verbose {
-			slog.Info("Start check.", "code", code)
-		}
-		if risky, unknown := accounting.Risky(acs, verbose); risky || unknown {
-			if verbose {
-				log.Printf("code %s is risky or does not have enough data.", code)
-			}
+		slog.Info("Start check.", "code", code)
+		if risky, unknown := accounting.Risky(acs); risky || unknown {
+			slog.Info(fmt.Sprintf("code %s is risky or does not have enough data.", code))
 			continue
 		}
 		if !accounting.IsGrowing(acs, strict) {
-			if verbose {
-				log.Printf("code %s is not growing.", code)
-			}
+			slog.Info(fmt.Sprintf("code %s is not growing.", code))
 			continue
 		}
 		candidateCode = append(candidateCode, code)
 	}
 	sort.Strings(candidateCode)
-	log.Println(candidateCode)
+	fmt.Println(candidateCode)
 }

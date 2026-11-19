@@ -1,7 +1,7 @@
 package accounting
 
 import (
-	"log"
+	"fmt"
 	"log/slog"
 	"sort"
 	"strconv"
@@ -90,13 +90,10 @@ func NewStockDividend(hs float64) *StockDividend {
 	}
 }
 
-func Risky(acs []*Accounting, verbose bool) (risky bool, unknown bool) {
-	if !verbose {
-		slog.SetLogLoggerLevel(slog.LevelWarn)
-		defer slog.SetLogLoggerLevel(slog.LevelInfo)
-	}
+func Risky(acs []*Accounting) (risky bool, unknown bool) {
 	if len(acs) == 0 {
 		slog.Info("no data")
+		return false, true
 	}
 
 	sort.Slice(acs, func(i, j int) bool {
@@ -214,21 +211,21 @@ func Evaluate(acs []*Accounting) {
 		return acs[i].Date.Before(acs[j].Date)
 	})
 	if len(acs) < 2 {
-		log.Println("no enough data.")
+		slog.Info("no enough data.")
 		return
 	}
 
 	for i, ac := range acs {
 		if ac.PL == nil {
-			log.Printf("ac[%d].PL is nil", i)
+			slog.Info(fmt.Sprintf("ac[%d].PL is nil", i))
 			continue
 		}
 		if ac.BS == nil {
-			log.Printf("ac[%d].BS is nil", i)
+			slog.Info(fmt.Sprintf("ac[%d].BS is nil", i))
 			continue
 		}
 		if ac.CF == nil {
-			log.Printf("ac[%d].CF is nil", i)
+			slog.Info(fmt.Sprintf("ac[%d].CF is nil", i))
 			continue
 		}
 		p := message.NewPrinter(language.English)
