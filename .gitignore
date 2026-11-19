@@ -22,3 +22,6 @@ jp-stock-analyzer
 go.work
 
 data
+
+# web
+stock-chart/node_modules

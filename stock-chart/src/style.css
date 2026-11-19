@@ -1,0 +1,80 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  font-family: sans-serif;
+  background: #f5f6f8;
+  color: #333;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-bottom: 24px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control > label {
+  font-weight: bold;
+}
+
+select,
+input[type="file"] {
+  padding: 8px;
+}
+
+.checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.checkboxes label {
+  cursor: pointer;
+}
+
+#status {
+  margin: 16px 0;
+  color: #666;
+}
+
+.chart-container {
+  height: 500px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .chart-container {
+    height: 400px;
+  }
+}

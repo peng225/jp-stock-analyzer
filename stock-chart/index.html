@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>株価・業績分析ツール</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>企業業績グラフ</h1>
+
+        <section class="controls">
+            <div class="control">
+                <label for="fileInput">CSVファイル読み込み</label>
+                <input type="file" id="fileInput" accept=".csv" multiple>
+            </div>
+
+            <div class="control">
+                <label for="stockSelect">銘柄コード</label>
+                <select id="stockSelect" disabled>
+                    <option value="">CSVを読み込んでください</option>
+                </select>
+            </div>
+
+            <div class="control">
+                <label>表示項目</label>
+                <div class="checkboxes">
+                    <label>
+                        <input type="checkbox" value="売上高" checked>
+                        売上高
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="営業利益" checked>
+                        営業利益
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="経常利益" checked>
+                        経常利益
+                    </label>
+
+                    <label>
+                        <input type="checkbox" value="純利益" checked>
+                        純利益
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <div id="status"></div>
+
+        <section class="chart-container">
+            <canvas id="chart"></canvas>
+        </section>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
