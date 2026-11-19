@@ -1,8 +1,8 @@
 package accounting
 
 import (
-	"fmt"
 	"log"
+	"log/slog"
 	"sort"
 	"strconv"
 	"time"
@@ -10,8 +10,6 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
-
-var errNoData error = fmt.Errorf("no data")
 
 type Accounting struct {
 	Date time.Time
@@ -92,81 +90,72 @@ func NewStockDividend(hs float64) *StockDividend {
 	}
 }
 
-func Risky(acs []*Accounting, verbose bool) bool {
+func Risky(acs []*Accounting, verbose bool) (risky bool, unknown bool) {
+	if !verbose {
+		slog.SetLogLoggerLevel(slog.LevelWarn)
+		defer slog.SetLogLoggerLevel(slog.LevelInfo)
+	}
 	if len(acs) == 0 {
-		log.Println("no data")
+		slog.Info("no data")
 	}
 
 	sort.Slice(acs, func(i, j int) bool {
 		return acs[i].Date.Before(acs[j].Date)
 	})
 
-	riskyConditions := []func(ac *Accounting) (bool, error){
-		// #0
-		func(ac *Accounting) (bool, error) {
-			if ac.PL == nil {
-				return true, fmt.Errorf("PL is nil: %w", errNoData)
-			}
-			return ac.PL.netProfit <= 0, nil
-		},
-		// #1
-		func(ac *Accounting) (bool, error) {
-			if ac.BS == nil {
-				return true, fmt.Errorf("BS is nil: %w", errNoData)
-			}
-			return ac.BS.profitJouyoMoney <= 0 || ac.BS.jikoshihonRatio < 20, nil
-		},
-		// #2
-		func(ac *Accounting) (bool, error) {
-			if ac.CF == nil {
-				return true, fmt.Errorf("CF is nil: %w", errNoData)
-			}
-			return ac.CF.eigyoCF <= 0, nil
-		},
-		// #3
-		func(ac *Accounting) (bool, error) {
-			if ac.BS == nil {
-				return true, fmt.Errorf("BS is nil: %w", errNoData)
-			}
-			if ac.CF == nil {
-				return true, fmt.Errorf("CF is nil: %w", errNoData)
-			}
-			return ac.CF.genkinDoutouButsu <= ac.BS.shortTermKariireMoney+ac.BS.longTermKariireMoney, nil
-		},
-		// #4
-		func(ac *Accounting) (bool, error) {
-			if ac.PL == nil {
-				return true, fmt.Errorf("PL is nil: %w", errNoData)
-			}
-			return ac.PL.roe/ac.PL.roa >= 3.0, nil
-		},
-		// #5
-		func(ac *Accounting) (bool, error) {
-			if ac.SD == nil {
-				return true, fmt.Errorf("SD is nil: %w", errNoData)
-			}
-			return ac.SD.haitouSeikou <= 20.0 || 50.0 <= ac.SD.haitouSeikou, nil
-		},
-	}
-
-	risky := false
-	for i, riskyCondition := range riskyConditions {
-		for j, ac := range acs {
-			r, err := riskyCondition(ac)
-			if err != nil {
-				if verbose {
-					log.Printf("riskyConditions[%d] returned error for ac[%d]. err: %v", i, j, err)
-				}
+	for _, ac := range acs {
+		if ac.PL == nil {
+			slog.Info("PL is nil")
+			unknown = true
+		} else {
+			if ac.PL.netProfit <= 0 {
+				slog.Info("Net profit is negative.")
 				risky = true
-			} else if r {
-				if verbose {
-					log.Printf("riskyConditions[%d] met for ac[%d].", i, j)
+			}
+			if ac.PL.roe/ac.PL.roa >= 3.0 {
+				slog.Info("ROE/ROA ratio is too large.")
+				risky = true
+			}
+		}
+		if ac.BS == nil {
+			slog.Info("BS is nil")
+			unknown = true
+		} else {
+			if ac.BS.profitJouyoMoney <= 0 {
+				slog.Info("Profit jouyo money is negative.")
+				risky = true
+			}
+			if ac.BS.jikoshihonRatio < 20 {
+				slog.Info("Jikoshihon ratio is too small.")
+				risky = true
+			}
+		}
+		if ac.CF == nil {
+			slog.Info("CF is nil")
+			unknown = true
+		} else {
+			if ac.CF.eigyoCF <= 0 {
+				slog.Info("Eigyo cache flow is negative.")
+				risky = true
+			}
+			if ac.BS != nil {
+				if ac.CF.genkinDoutouButsu < ac.BS.shortTermKariireMoney+ac.BS.longTermKariireMoney {
+					slog.Info("Kariire is larger than genkin doutou butsu.")
+					risky = true
 				}
+			}
+		}
+		if ac.SD == nil {
+			slog.Info("SD is nil")
+			unknown = true
+		} else {
+			if ac.SD.haitouSeikou <= 20.0 || 50.0 <= ac.SD.haitouSeikou {
+				slog.Info("Haitou seikou is not in the proper range.", "haitouSeikou", ac.SD.haitouSeikou)
 				risky = true
 			}
 		}
 	}
-	return risky
+	return
 }
 
 func IsGrowing(acs []*Accounting, strict bool) bool {

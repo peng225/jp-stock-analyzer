@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"log/slog"
 	"sort"
 
 	"github.com/peng225/jp-stock-analyzer/accounting"
@@ -60,8 +61,8 @@ func main() {
 
 	if code != "" {
 		acs := acList[code]
-		if accounting.Risky(acs, verbose) {
-			log.Printf("code %s is going bankrupt or does not have enough data.", code)
+		if risky, unknown := accounting.Risky(acs, verbose); risky || unknown {
+			log.Printf("code %s is risky or does not have enough data.", code)
 		} else {
 			log.Printf("code %s is safe.", code)
 		}
@@ -71,9 +72,12 @@ func main() {
 
 	candidateCode := make([]string, 0, 128)
 	for code, acs := range acList {
-		if accounting.Risky(acs, verbose) {
+		if verbose {
+			slog.Info("Start check.", "code", code)
+		}
+		if risky, unknown := accounting.Risky(acs, verbose); risky || unknown {
 			if verbose {
-				log.Printf("code %s is going bankrupt or does not have enough data.", code)
+				log.Printf("code %s is risky or does not have enough data.", code)
 			}
 			continue
 		}
