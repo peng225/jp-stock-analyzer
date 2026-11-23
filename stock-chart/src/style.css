@@ -38,11 +38,6 @@ h1 {
   font-weight: bold;
 }
 
-select,
-input[type="file"] {
-  padding: 8px;
-}
-
 .checkboxes {
   display: flex;
   flex-wrap: wrap;

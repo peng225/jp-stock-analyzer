@@ -24,4 +24,5 @@ go.work
 data
 
 # web
+stock-chart/.env
 stock-chart/node_modules

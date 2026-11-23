@@ -52,9 +52,6 @@ const items: ItemDefinition[] = [
 ];
 
 // DOM
-const fileInput =
-  document.querySelector<HTMLInputElement>('#fileInput')!;
-
 const stockSelect =
   document.querySelector<HTMLSelectElement>('#stockSelect')!;
 
@@ -122,36 +119,52 @@ function formatYear(year: string): string {
 }
 
 // CSVファイルを読み込む
-async function loadFile(file: File): Promise<StockData[]> {
-    return new Promise((resolve, reject) => {
-        Papa.parse<string[]>(file, {
-            header: false,
-            skipEmptyLines: true,
+async function loadFile(
+  fileName: string,
+  content: string
+): Promise<StockData[]> {
+  return new Promise((resolve, reject) => {
+    Papa.parse<string[]>(content, {
+      header: false,
+      skipEmptyLines: true,
 
-            complete: (result) => {
-                const rows = result.data
-                    .map(convertRow)
-                    .filter((row): row is StockData => row !== null);
+      complete: (result) => {
+        const rows = result.data
+          .map(convertRow)
+          .filter((row): row is StockData => row !== null);
 
-                resolve(rows);
-            },
+        console.log(`${fileName}: ${rows.length}件`);
 
-            error: (error) => {
-                reject(error);
-            },
-        });
+        resolve(rows);
+      },
+
+      error: (error) => {
+        reject(error);
+      },
     });
+  });
 }
 
 // 複数CSVファイルを読み込む
-async function loadFiles(files: FileList): Promise<void> {
-  statusElement.textContent = '読み込み中...';
+async function loadFiles(): Promise<void> {
+  statusElement.textContent = 'CSVファイル読み込み中...';
 
   try {
+    const response = await fetch('/api/csv');
+
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+    }
+
+    const files: {
+      name: string;
+      content: string;
+    }[] = await response.json();
+
     const allRows: StockData[] = [];
 
     for (const file of files) {
-      const rows = await loadFile(file);
+      const rows = await loadFile(file.name, file.content);
       allRows.push(...rows);
     }
 
@@ -165,7 +178,7 @@ async function loadFiles(files: FileList): Promise<void> {
 
     stockData = Array.from(dataMap.values());
 
-    // コード順に並べる
+    // 銘柄コード順に並べる
     stockData.sort((a, b) => a.code.localeCompare(b.code));
 
     updateStockSelect();
@@ -174,9 +187,14 @@ async function loadFiles(files: FileList): Promise<void> {
       `${files.length}ファイル、${stockData.length}件のデータを読み込みました。`;
 
     updateChart();
+
   } catch (error) {
     console.error(error);
-    statusElement.textContent = 'CSVの読み込みに失敗しました。';
+
+    statusElement.textContent =
+      error instanceof Error
+        ? `読み込みエラー: ${error.message}`
+        : 'CSVの読み込みに失敗しました。';
   }
 }
 
@@ -327,14 +345,11 @@ function updateChart(): void {
 }
 
 // イベント設定
-fileInput.addEventListener('change', () => {
-  if (fileInput.files && fileInput.files.length > 0) {
-    loadFiles(fileInput.files);
-  }
-});
-
 stockSelect.addEventListener('change', updateChart);
 
 checkboxes.forEach(checkbox => {
   checkbox.addEventListener('change', updateChart);
 });
+
+// 起動時に自動読み込み
+loadFiles();
