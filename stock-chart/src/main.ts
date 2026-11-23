@@ -138,7 +138,7 @@ async function loadFile(
         resolve(rows);
       },
 
-      error: (error) => {
+      error: (error: Error) => {
         reject(error);
       },
     });
