@@ -99,10 +99,16 @@ func main() {
 
 	if code != "" {
 		acs := acList[code]
-		if risky, unknown := accounting.Risky(acs); risky || unknown {
-			fmt.Printf("code %s is risky or does not have enough data.\n", code)
-		} else {
-			fmt.Printf("code %s is safe.\n", code)
+		risky, unknown := accounting.Risky(acs)
+		switch {
+		case risky && unknown:
+			fmt.Printf("Code %s is risky and does not have enough data.\n", code)
+		case risky:
+			fmt.Printf("Code %s is risky.\n", code)
+		case unknown:
+			fmt.Printf("Code %s does not have enough data.\n", code)
+		default:
+			fmt.Printf("Code %s is safe.\n", code)
 		}
 		accounting.Evaluate(acs)
 		return
