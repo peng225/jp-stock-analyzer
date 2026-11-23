@@ -215,27 +215,29 @@ func Evaluate(acs []*Accounting) {
 		return
 	}
 
+	p := message.NewPrinter(language.English)
 	for i, ac := range acs {
+		p.Printf("== %s ==\n", strconv.Itoa(ac.Date.Year()))
 		if ac.PL == nil {
 			slog.Info(fmt.Sprintf("ac[%d].PL is nil", i))
-			continue
+		} else {
+			p.Printf("PL.netProfit: %d\n", ac.PL.netProfit)
+			p.Printf("PL.ordinaryProfit: %d\n", ac.PL.ordinaryProfit)
+			p.Printf("PL.roe: %f\n", ac.PL.roe)
+			p.Printf("PL.roa: %f\n", ac.PL.roa)
 		}
+
 		if ac.BS == nil {
 			slog.Info(fmt.Sprintf("ac[%d].BS is nil", i))
-			continue
+		} else {
+			p.Printf("BS.retainedEarnings: %d\n", ac.BS.retainedEarnings)
+			p.Printf("BS.equityRatio: %f\n", ac.BS.equityRatio)
 		}
+
 		if ac.CF == nil {
 			slog.Info(fmt.Sprintf("ac[%d].CF is nil", i))
-			continue
+		} else {
+			p.Printf("CF.operatingCF: %d\n", ac.CF.operatingCF)
 		}
-		p := message.NewPrinter(language.English)
-		p.Printf("== %s ==\n", strconv.Itoa(ac.Date.Year()))
-		p.Printf("PL.netProfit: %d\n", ac.PL.netProfit)
-		p.Printf("PL.ordinaryProfit: %d\n", ac.PL.ordinaryProfit)
-		p.Printf("PL.roe: %f\n", ac.PL.roe)
-		p.Printf("PL.roa: %f\n", ac.PL.roa)
-		p.Printf("BS.retainedEarnings: %d\n", ac.BS.retainedEarnings)
-		p.Printf("BS.equityRatio: %f\n", ac.BS.equityRatio)
-		p.Printf("CF.operatingCF: %d\n", ac.CF.operatingCF)
 	}
 }
