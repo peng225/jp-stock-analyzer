@@ -166,7 +166,7 @@ func IsGrowing(acs []*Accounting, strict bool) bool {
 		return false
 	}
 	for i := 0; i < len(acs)-1; i++ {
-		// Check the growth of the ordinary profit.
+		// 経常利益が成長しているかチェック。
 		if acs[i].PL == nil || acs[i+1].PL == nil {
 			return false
 		}
@@ -180,7 +180,7 @@ func IsGrowing(acs []*Accounting, strict bool) bool {
 			return false
 		}
 
-		// Check the growth of the revenue.
+		// 売上高が成長しているかチェック。
 		if acs[i].PL == nil || acs[i+1].PL == nil {
 			return false
 		}
